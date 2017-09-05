@@ -14,25 +14,21 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus
 
-object EventStatsServer {
+object EventStatsAPINode {
 
   def main(ports: Array[String]): Unit = {
 
-    var portss = Array("2551", "2552", "0")
-
-    if (!ports.isEmpty) portss = ports
-
-    portss foreach { port =>
+    ports foreach { port =>
       // Override the configuration of the port when specified as program argument
-      val config =
-        ConfigFactory.parseString(s"akka.remote.netty.tcp.port=" + port).withFallback(
-          ConfigFactory.parseString("akka.cluster.roles = [compute]")).
-          withFallback(ConfigFactory.load("application"))
+      val config = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=" + port)
+        .withFallback(ConfigFactory.parseString("akka.cluster.roles = [compute]"))
+        .withFallback(ConfigFactory.load("application"))
 
       val system = ActorSystem("ApiCluster", config)
 
       system.actorOf(Props[EventsStatsActor], name = "statsWorker")
-      system.actorOf(Props[EventStatsProcessingActor], name = "statsService")
+      system.actorOf(Props[EventStatsProcessingRouter], name = "statsProcessor")
     }
   }
+
 }

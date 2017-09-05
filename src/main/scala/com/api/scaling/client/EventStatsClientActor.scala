@@ -21,7 +21,7 @@ import scala.util.Random
 class EventStatsClientActor(processorPath: String) extends Actor {
   val cluster = Cluster(context.system)
 
-  val servicePathElements = processorPath match {
+  val processorPathElements = processorPath match {
     case RelativeActorPath(elements) => elements
     case _ => throw new IllegalArgumentException(
       "servicePath [%s] is not a valid relative actor path" format processorPath)
@@ -47,14 +47,14 @@ class EventStatsClientActor(processorPath: String) extends Actor {
     case "GetStats" if workerNodes.nonEmpty =>
       // just pick any one
       val address = workerNodes.toIndexedSeq(ThreadLocalRandom.current.nextInt(workerNodes.size))
-      val processorActor = context.actorSelection(RootActorPath(address) / servicePathElements)
-      processorActor ! StatsEvent(payload = "This is the text that will be analyzed - " + Random.nextInt(1000))
+      val processorActor = context.actorSelection(RootActorPath(address) / processorPathElements)
+      processorActor ! StatsEvent(payload = "This is the payload that will be analyzed - " + Random.nextInt(10000))
 
     case result: StatsResultNotification =>
-      println("[INFO] " + result)
+      println("[INFO] EventStatsClientActor " + result)
 
     case failed: EventFailed =>
-      println("[INFO] " + failed)
+      println("[INFO] EventStatsClientActor " + failed)
 
     case state: CurrentClusterState =>
       workerNodes = state.members.collect {
@@ -74,6 +74,6 @@ object EventStatsClientActor {
   def main(args: Array[String]): Unit = {
     // note that client is not a compute node, role not defined
     val system = ActorSystem("ApiCluster")
-    system.actorOf(Props(classOf[EventStatsClientActor], "/user/statsService"), "api-client")
+    system.actorOf(Props(classOf[EventStatsClientActor], "/user/statsProcessor"), "api-client")
   }
 }
