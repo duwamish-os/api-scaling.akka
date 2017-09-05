@@ -72,8 +72,10 @@ class EventStatsClientActor(processorPath: String) extends Actor {
 object EventStatsClientActor {
 
   def main(args: Array[String]): Unit = {
+
     // note that client is not a compute node, role not defined
     val system = ActorSystem("ApiCluster")
-    system.actorOf(Props(classOf[EventStatsClientActor], "/user/statsProcessor"), "api-client")
+    system.actorOf(Props(classOf[EventStatsClientActor], "/user/statsProcessorProxy"), "api-client")
+
   }
 }
