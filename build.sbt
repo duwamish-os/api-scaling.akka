@@ -11,3 +11,7 @@ libraryDependencies += "com.typesafe.akka" %% "akka-cluster" % akkaVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion
 
 libraryDependencies += "com.typesafe.akka" %% "akka-cluster-metrics" % akkaVersion
+
+libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
+
+libraryDependencies +=  "org.fusesource" % "sigar" % "1.6.4"
