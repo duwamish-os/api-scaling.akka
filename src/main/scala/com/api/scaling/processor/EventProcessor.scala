@@ -12,7 +12,7 @@ class EventProcessor(val processingTimeMillis: Int) extends Actor with Unbounded
     case data: Array[Int] => {
       println(s"[INFO] EventProcessor processing ${data} will take ${processingTimeMillis}")
       context.become(processing, discardOld = false)
-      context.system.scheduler.scheduleOnce(processingTimeMillis.millis, self, "endProcessing")
+      context.system.scheduler.scheduleOnce(processingTimeMillis.millis, self, "PROCESSING_COMPLETED")
     }
 
   }
@@ -21,8 +21,8 @@ class EventProcessor(val processingTimeMillis: Int) extends Actor with Unbounded
 
     case data: Array[Int] => stash()
 
-    case "endProcessing" => {
-      log.debug("endProcessing") // for unit test
+    case "PROCESSING_COMPLETED" => {
+      log.debug("PROCESSING_COMPLETED") // for unit test
 
       unstashAll()
       context.unbecome()

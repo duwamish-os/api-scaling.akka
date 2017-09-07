@@ -3,17 +3,23 @@ package com.api.scaling.metrics
 import scala.collection.immutable.TreeMap
 
 /**
-  * Collects heap metrics.
+  * Collects JVM heap (RAM) metrics.
   */
 class ClusterJvmHeapMetrics() {
 
-  /** nodeAddress -> sequence of collected heap use on node */
-  private[this] var nodesHeapUse: TreeMap[String, Seq[Long]] = TreeMap.empty
+  /**
+    * nodeAddress -> sequence of collected heap use on node
+    */
+  private[this] var nodesJVMHeapUse: TreeMap[String, Seq[Long]] = TreeMap.empty
 
-  /** Updates heap use statistics for node with nodeAddress */
+  /**
+    * Updates heap use statistics for node with nodeAddress
+    */
   def update(nodeAddress: String, usedMB: Long): Unit = {
-    val updatedHeapUse = nodesHeapUse.getOrElse(nodeAddress, Seq.empty) :+ usedMB
-    nodesHeapUse += nodeAddress -> updatedHeapUse
+
+    val updatedHeapUse = nodesJVMHeapUse.getOrElse(nodeAddress, Seq.empty) :+ usedMB
+    nodesJVMHeapUse += nodeAddress -> updatedHeapUse
+
   }
 
   /**
@@ -23,9 +29,9 @@ class ClusterJvmHeapMetrics() {
     * node_1_avgheapuse,node_2_avgheapuse,..,node_n_avgheapuse
     */
   def calculateAverages: Iterable[Long] =
-    nodesHeapUse.values map (nHeapUse => if (nHeapUse.isEmpty) 0 else nHeapUse.sum / nHeapUse.length)
+    nodesJVMHeapUse.values map (nHeapUse => if (nHeapUse.isEmpty) 0 else nHeapUse.sum / nHeapUse.length)
 
   def clear(): Unit =
-    nodesHeapUse = nodesHeapUse map { case (nodeAddress, heapUse) => nodeAddress -> Seq.empty }
+    nodesJVMHeapUse = nodesJVMHeapUse map { case (nodeAddress, heapUse) => nodeAddress -> Seq.empty }
 
 }

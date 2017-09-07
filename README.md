@@ -7,17 +7,40 @@ http://doc.akka.io/docs/akka/2.5/scala/routing.html
 a cluster aware router on single master node that creates and deploys workers
 instead of looking them up.
 
-config
+
+cluster setup
+-------------
+
+Setup
+
+1) 1 emitter node is started.
+It contains 2 actors:
+* the emitter actor that sends 10 events per second and
+* the cluster listener actor that collects and logs average heap usage of each processor node.
+
+router config
 
 ```
 router = cluster-metrics-adaptive-group
 ```
 
+2) 4 processor nodes are started.
+Each node contains 1 processor actor.
+
+All processors can together process 11 events per second. However, each of them processes events at different rate.
+
+Each node in the cluster is started on the same computer but on different jvm with settings
+`-Xmx256m -XX:NewSize=128m -XX:MaxNewSize=128m -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode`.
+
+3) default Akka Cluster metrics settings.
+4) event size is around 1 MB.
+
+
 Event emitter
 -------------
 
 ```bash
-bash devops/event-emitter.sh 100 127.0.0.1 2555 127.0.0.1:2555
+bash devops/event-emitter.sh 100 127.0.0.1 2555 127.0.0.1:2555  application.conf
 [INFO] [09/06/2017 01:41:29.516] [main] [akka.cluster.Cluster(akka://ClusterSystem)] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2555] - Registered cluster JMX MBean [akka:type=Cluster]
 
 [INFO] [09/06/2017 01:47:20.531] [ClusterSystem-akka.actor.default-dispatcher-15] [akka.cluster.Cluster(akka://ClusterSystem)] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2555] - Leader is moving node [akka.tcp://ClusterSystem@127.0.0.1:2556] to [Exiting]
@@ -31,7 +54,7 @@ processor node 1
 # hostname 127.0.0.1, port 2556,
 # seednode 127.0.0.1:2555
 
-bash devops/event-processor.sh 250 127.0.0.1 2556 127.0.0.1:2555
+bash devops/event-processor.sh 250 127.0.0.1 2556 127.0.0.1:2555 application.conf
 [INFO] [09/06/2017 01:46:19.243] [main] [akka.cluster.Cluster(akka://ClusterSystem)] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2556] - Started up successfully
 
 
@@ -78,7 +101,7 @@ processor node 2
 ```
 # consumer that receives max. 4 msg / [s]
 
-bash devops/event-processor.sh 250 127.0.0.1 2557 127.0.0.1:2555
+bash devops/event-processor.sh 250 127.0.0.1 2557 127.0.0.1:2555 application.conf
 [INFO] [09/06/2017 01:56:09.815] [ClusterSystem-akka.actor.default-dispatcher-16] [akka.cluster.Cluster(akka://ClusterSystem)] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2557] - Metrics collection has started successfully
 
 WARNING: An exception was thrown by a user handler while handling an exception event ([id: 0x62eef4a8, /127.0.0.1:50725 => /127.0.0.1:2557] EXCEPTION: java.lang.OutOfMemoryError: Java heap space)
@@ -124,6 +147,6 @@ processor node 4
 ```
 # consumer that receives max. 1 msg / [s]
 
-bash devops/event-processor.sh 1000 127.0.0.1 2559 127.0.0.1:2555
+bash devops/event-processor.sh 1000 127.0.0.1 2559 127.0.0.1:2555 application.conf
 [INFO] [09/06/2017 02:02:22.275] [ClusterSystem-akka.actor.default-dispatcher-2] [akka.cluster.Cluster(akka://ClusterSystem)] Cluster Node [akka.tcp://ClusterSystem@127.0.0.1:2559] - Metrics collection has started successfully
 ```
