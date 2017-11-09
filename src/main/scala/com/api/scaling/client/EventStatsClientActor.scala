@@ -1,21 +1,13 @@
 package com.api.scaling.client
 
-import scala.concurrent.duration._
 import java.util.concurrent.ThreadLocalRandom
 
-import com.typesafe.config.ConfigFactory
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Address
-import akka.actor.PoisonPill
-import akka.actor.Props
-import akka.actor.RelativeActorPath
-import akka.actor.RootActorPath
-import akka.cluster.Cluster
+import akka.actor.{Actor, ActorSystem, Address, Props, RelativeActorPath, RootActorPath}
 import akka.cluster.ClusterEvent._
-import akka.cluster.MemberStatus
+import akka.cluster.{Cluster, MemberStatus}
 import com.api.scaling.server.{EventFailed, StatsEvent, StatsResultNotification}
 
+import scala.concurrent.duration._
 import scala.util.Random
 
 class EventStatsClientActor(processorPath: String) extends Actor {
