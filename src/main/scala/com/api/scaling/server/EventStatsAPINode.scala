@@ -3,8 +3,9 @@ package com.api.scaling.server
 import java.util.concurrent.TimeUnit
 
 import akka.pattern.ask
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{Actor, ActorSystem, Props}
 import akka.util.Timeout
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object EventStatsAPINode {
@@ -13,8 +14,9 @@ object EventStatsAPINode {
 
     implicit val timeout = Timeout(100, TimeUnit.MILLISECONDS)
 
-    val system = ActorSystem("ApiCluster")
+    implicit val system = ActorSystem("ApiCluster")
     val statsActor = system.actorOf(Props[EventsStatsActor], name = "statsWorker")
+
     system.actorOf(Props[EventStatsProcessingRouter], name = "statsProcessor")
 
     val result = statsActor ? "ping pong"
