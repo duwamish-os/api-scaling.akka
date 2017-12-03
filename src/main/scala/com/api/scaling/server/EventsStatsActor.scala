@@ -18,7 +18,7 @@ class EventsStatsActor extends Actor {
 
   var cache = Map.empty[String, Int]
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
 
     case word: WordEvent =>
       println("received")
