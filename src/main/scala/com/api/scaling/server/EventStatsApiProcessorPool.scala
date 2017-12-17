@@ -2,10 +2,9 @@ package com.api.scaling.server
 
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings}
-import com.api.scaling.client.EventStatsClientActor
 import com.typesafe.config.ConfigFactory
 
-object EventStatsApiPool {
+object EventStatsApiProcessorPool {
 
   def main(ports: Array[String]): Unit = {
 
@@ -15,16 +14,16 @@ object EventStatsApiPool {
         .withFallback(ConfigFactory.parseString("akka.cluster.roles = [compute]"))
         .withFallback(ConfigFactory.load("application"))
 
-      val system = ActorSystem("ApiCluster", config)
+      val apiSystem = ActorSystem("ApiCluster", config)
 
-      system.actorOf(ClusterSingletonManager.props(
+      apiSystem.actorOf(ClusterSingletonManager.props(
         singletonProps = Props[EventStatsProcessingRouter],
         terminationMessage = PoisonPill,
-        settings = ClusterSingletonManagerSettings(system).withRole("compute")),
+        settings = ClusterSingletonManagerSettings(apiSystem).withRole("compute")),
         name = "statsProcessor")
 
-      system.actorOf(ClusterSingletonProxy.props(singletonManagerPath = "/user/statsProcessor",
-        settings = ClusterSingletonProxySettings(system).withRole("compute")),
+      apiSystem.actorOf(ClusterSingletonProxy.props(singletonManagerPath = "/user/statsProcessor",
+        settings = ClusterSingletonProxySettings(apiSystem).withRole("compute")),
         name = "statsProcessorProxy")
     }
   }

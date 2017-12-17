@@ -4,19 +4,19 @@ import akka.actor.Actor
 
 class EventsStatsActor extends Actor {
 
-  var cache = Map.empty[String, Int]
+  var lengthCacheState = Map.empty[String, Int]
 
   def receive: PartialFunction[Any, Unit] = {
 
     case word: String =>
-      val length = cache.get(word) match {
+      val length = lengthCacheState.get(word) match {
 
         case Some(x) => x
 
         case None =>
-          val x = word.length
-          cache += (word -> x)
-          x
+          val length = word.length
+          lengthCacheState += (word -> length)
+          length
       }
 
       sender() ! length

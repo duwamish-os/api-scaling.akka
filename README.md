@@ -5,16 +5,26 @@
 a cluster aware router on single master node that creates and deploys workers
 instead of looking them up.
 
+Server
+------
+
 ```bash
 sbt "runMain com.api.scaling.server.EventStatsApiProcessorPool 2551"
 [INFO] [09/05/2017 15:28:14.888] [ApiCluster-akka.actor.default-dispatcher-16] [akka.tcp://ApiCluster@127.0.0.1:2551/user/statsProcessor] ClusterSingletonManager state change [Start -> Oldest]
+```
 
-# following node won't get involved in processing events, unless leader is
-# stopped
 
+following node won't get involved in processing events, unless leader is
+stopped
+
+
+```
 sbt "runMain com.api.scaling.server.EventStatsApiProcessorPool 2552"
 [INFO] [09/05/2017 15:31:43.220] [ApiCluster-akka.actor.default-dispatcher-3] [akka.cluster.Cluster(akka://ApiCluster)] Cluster Node [akka.tcp://ApiCluster@127.0.0.1:2552] - Welcome from [akka.tcp://ApiCluster@127.0.0.1:2551]
 ```
+
+Client
+------
 
 ```
 sbt "runMain com.api.scaling.client.EventStatsClientActor"

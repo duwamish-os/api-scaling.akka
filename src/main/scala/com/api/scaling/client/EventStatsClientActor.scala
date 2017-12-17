@@ -18,6 +18,9 @@ import com.api.scaling.server.{EventFailed, StatsEvent, StatsResultNotification}
 
 import scala.util.Random
 
+trait Event
+case class GetStats() extends Event
+
 class EventStatsClientActor(processorPath: String) extends Actor {
   val cluster = Cluster(context.system)
 
@@ -29,9 +32,9 @@ class EventStatsClientActor(processorPath: String) extends Actor {
 
   import context.dispatcher
 
-  val keepEmittingGetStatEvents = context.system.scheduler.schedule(2.seconds, 2.seconds, self, "GetStats")
+  val keepEmittingGetStatEvents = context.system.scheduler.schedule(2.seconds, 2.seconds, self, GetStats())
 
-  var workerNodes = Set.empty[Address]
+  var workerNodesState = Set.empty[Address]
 
   override def preStart(): Unit = {
     cluster.subscribe(self, classOf[MemberEvent], classOf[ReachabilityEvent])
@@ -42,11 +45,11 @@ class EventStatsClientActor(processorPath: String) extends Actor {
     keepEmittingGetStatEvents.cancel()
   }
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
 
-    case "GetStats" if workerNodes.nonEmpty =>
+    case GetStats() if workerNodesState.nonEmpty =>
       // just pick any one
-      val address = workerNodes.toIndexedSeq(ThreadLocalRandom.current.nextInt(workerNodes.size))
+      val address = workerNodesState.toIndexedSeq(ThreadLocalRandom.current.nextInt(workerNodesState.size))
       val processorActor = context.actorSelection(RootActorPath(address) / processorPathElements)
       processorActor ! StatsEvent(payload = "This is the payload that will be analyzed - " + Random.nextInt(10000))
 
@@ -57,14 +60,14 @@ class EventStatsClientActor(processorPath: String) extends Actor {
       println("[INFO] EventStatsClientActor " + failed)
 
     case state: CurrentClusterState =>
-      workerNodes = state.members.collect {
+      workerNodesState = state.members.collect {
         case m if m.hasRole("compute") && m.status == MemberStatus.Up => m.address
       }
 
-    case MemberUp(m) if m.hasRole("compute") => workerNodes += m.address
-    case other: MemberEvent => workerNodes -= other.member.address
-    case UnreachableMember(m) => workerNodes -= m.address
-    case ReachableMember(m) if m.hasRole("compute") => workerNodes += m.address
+    case MemberUp(m) if m.hasRole("compute") => workerNodesState += m.address
+    case other: MemberEvent => workerNodesState -= other.member.address
+    case UnreachableMember(m) => workerNodesState -= m.address
+    case ReachableMember(m) if m.hasRole("compute") => workerNodesState += m.address
   }
 
 }
