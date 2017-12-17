@@ -9,7 +9,7 @@ class EventStatsProcessingRouter extends Actor {
   // This router is used both with lookup and deploy of routees. If you
   // have a router with only lookup of routees you can use Props.empty
   // instead of Props[EventsStatsActor]
-  val workerActor: ActorRef = context.actorOf(FromConfig.props(Props[EventsStatsActor]), name = "workerRouter")
+  val workerRouter: ActorRef = context.actorOf(FromConfig.props(Props[EventsStatsActor]), name = "workerRouter")
 
   def receive: PartialFunction[Any, Unit] = {
 
@@ -22,7 +22,10 @@ class EventStatsProcessingRouter extends Actor {
 
       wordsInSentence foreach { word =>
         println("[INFO] EventStatsProcessingRouter Routing through EventsStatsActor")
-        workerActor.tell(ConsistentHashableEnvelope(word, word), aggregator)
+        workerRouter.tell(ConsistentHashableEnvelope(message = WordEvent(word), hashKey = word), aggregator)
       }
+
+    case others => println(s"received $others")
+
   }
 }

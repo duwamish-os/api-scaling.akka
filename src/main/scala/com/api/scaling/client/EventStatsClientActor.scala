@@ -32,7 +32,7 @@ class EventStatsClientActor(processorPath: String) extends Actor {
 
   import context.dispatcher
 
-  val keepEmittingGetStatEvents = context.system.scheduler.schedule(2.seconds, 2.seconds, self, GetStats())
+  val keepEmittingGetStatEvents = context.system.scheduler.schedule(2.seconds, 30.seconds, self, GetStats())
 
   var workerNodesState = Set.empty[Address]
 
@@ -53,8 +53,8 @@ class EventStatsClientActor(processorPath: String) extends Actor {
       val processorActor = context.actorSelection(RootActorPath(address) / processorPathElements)
       processorActor ! StatsEvent(payload = "This is the payload that will be analyzed - " + Random.nextInt(10000))
 
-    case result: StatsResultNotification =>
-      println("[INFO] EventStatsClientActor " + result)
+    case resultNotification: StatsResultNotification =>
+      println("[INFO] EventStatsClientActor " + resultNotification)
 
     case failed: EventFailed =>
       println("[INFO] EventStatsClientActor " + failed)

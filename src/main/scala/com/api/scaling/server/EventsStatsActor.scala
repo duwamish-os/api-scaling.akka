@@ -2,23 +2,30 @@ package com.api.scaling.server
 
 import akka.actor.Actor
 
+case class WordEvent(payload: String)
+
 class EventsStatsActor extends Actor {
 
   var lengthCacheState = Map.empty[String, Int]
 
   def receive: PartialFunction[Any, Unit] = {
 
-    case word: String =>
-      val length = lengthCacheState.get(word) match {
+    case event: WordEvent =>
 
-        case Some(x) => x
+      println(s"[INFO] EventsStatsActor ${event.payload} from ${sender()}")
+
+      val length = lengthCacheState.get(event.payload) match {
+
+        case Some(len) => len
 
         case None =>
-          val length = word.length
-          lengthCacheState += (word -> length)
+          val length = event.payload.length
+          lengthCacheState += (event.payload -> length)
           length
       }
 
-      sender() ! length
+      sender() ! WordLengthEvent(length)
+
+    case others => println(s"unhandled $others")
   }
 }

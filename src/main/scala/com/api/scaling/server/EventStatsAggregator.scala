@@ -2,7 +2,9 @@ package com.api.scaling.server
 
 import akka.actor.{Actor, ActorRef, ReceiveTimeout}
 
-class EventStatsAggregator(event: String, aggregateCondition: Int, replyTo: ActorRef) extends Actor {
+case class WordLengthEvent(length: Int)
+
+class EventStatsAggregator(word: String, aggregateCondition: Int, replyTo: ActorRef) extends Actor {
 
   var resultAggregationState: IndexedSeq[Int] = IndexedSeq.empty[Int]
 
@@ -12,8 +14,9 @@ class EventStatsAggregator(event: String, aggregateCondition: Int, replyTo: Acto
 
   def receive: PartialFunction[Any, Unit] = {
 
-    case wordCount: Int =>
-      resultAggregationState = resultAggregationState :+ wordCount
+    case event: WordLengthEvent =>
+
+      resultAggregationState = resultAggregationState :+ event.length
 
       if (resultAggregationState.size == aggregateCondition) {
 
@@ -21,7 +24,7 @@ class EventStatsAggregator(event: String, aggregateCondition: Int, replyTo: Acto
 
         val meanWordLength = resultAggregationState.sum.toDouble / resultAggregationState.size
 
-        replyTo ! StatsResultNotification(event, meanWordLength)
+        replyTo ! StatsResultNotification(word, meanWordLength)
 
         context.stop(self)
       }
