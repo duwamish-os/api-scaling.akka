@@ -9,11 +9,10 @@ class EventProcessor(val processingTimeMillis: Int) extends Actor with Unbounded
 
   def receive: Receive = {
 
-    case data: Array[Int] => {
+    case data: Array[Int] =>
       println(s"[INFO] EventProcessor processing ${data} will take ${processingTimeMillis}")
       context.become(processing, discardOld = false)
       context.system.scheduler.scheduleOnce(processingTimeMillis.millis, self, "PROCESSING_COMPLETED")
-    }
 
   }
 

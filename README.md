@@ -1,11 +1,14 @@
 
-[API Router with Pool of Remote Deployed Routees](http://developer.lightbend.com/guides/akka-sample-cluster-scala/#router-example-with-pool-of-remote-deployed-routees)
+[API Router with Adaptive Load Balancing](https://developer.lightbend.com/guides/akka-sample-cluster-scala/#adaptive-load-balancing)
 ---------------------------------------------
 
-http://doc.akka.io/docs/akka/2.5/scala/routing.html
+https://doc.akka.io/docs/akka/2.5/cluster-usage.html?language=scala#Cluster_Metrics
 
-a cluster aware router on single master node that creates and deploys workers
-instead of looking them up.
+The member nodes of the cluster collects system health metrics and publishes
+that to other nodes and to registered subscribers.
+
+This information is primarily used for load-balancing routers, such as the
+`AdaptiveLoadBalancingPool` and `AdaptiveLoadBalancingGroup` routers.
 
 
 cluster setup
@@ -13,27 +16,54 @@ cluster setup
 
 Setup
 
-1) 1 emitter node is started.
-It contains 2 actors:
-* the emitter actor that sends 10 events per second and
-* the cluster listener actor that collects and logs average heap usage of each processor node.
+client
+------
 
-router config
+1) **One emitter node is started (see `EventEmitterNode.scala`).**
 
+    It contains 2 actors:
+    * the emitter_actor(`EventEmitter.scala`) sends 10 events per second and
+    * the cluster_listener_actor that collects and logs average heap usage of
+      each processor node.
+
+router config (`EventEmitter.scala` uses it)
+
+```bash
+    deployment {
+      /emitter/consumerRouter = {
+        router = cluster-metrics-adaptive-group
+        #round-robin-group
+
+        metrics-selector = mix
+        nr-of-instances = 100
+        routees.paths = ["/user/consumer"]
+        cluster {
+          max-nr-of-instances-per-node = 1
+          enabled = on
+          use-role = consumer
+          allow-local-routees = off
+        }
+      }
+    }
 ```
-router = cluster-metrics-adaptive-group
-```
 
-2) 4 processor nodes are started.
+
+server
+------
+
+2) **Four processor nodes are started.**
+
 Each node contains 1 processor actor.
 
-All processors can together process 11 events per second. However, each of them processes events at different rate.
+All processors can together process 11 events per second. However, each of them
+processes events at different rate.
 
-Each node in the cluster is started on the same computer but on different jvm with settings
+Each node in the cluster is started on the same computer but on different
+jvm with settings
 `-Xmx256m -XX:NewSize=128m -XX:MaxNewSize=128m -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode`.
 
-3) default Akka Cluster metrics settings.
-4) event size is around 1 MB.
+3) **default Akka Cluster metrics settings.**
+4) **event size is around 1 MB.**
 
 
 Event emitter
