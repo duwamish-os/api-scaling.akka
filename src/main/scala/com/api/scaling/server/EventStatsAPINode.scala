@@ -1,34 +1,23 @@
 package com.api.scaling.server
 
+import java.util.UUID
+
+import akka.actor.{ActorSystem, Props}
+import com.api.scaling.server.router.EventStatsProcessingRouter
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import scala.concurrent.duration._
-import java.util.concurrent.ThreadLocalRandom
-import com.typesafe.config.ConfigFactory
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Address
-import akka.actor.PoisonPill
-import akka.actor.Props
-import akka.actor.RelativeActorPath
-import akka.actor.RootActorPath
-import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
-import akka.cluster.MemberStatus
 
 object EventStatsAPINode {
 
   def main(ports: Array[String]): Unit = {
 
-    ports foreach { port =>
-      // Override the configuration of the port when specified as program argument
-      val config = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=" + port)
-        .withFallback(ConfigFactory.parseString("akka.cluster.roles = [compute]"))
-        .withFallback(ConfigFactory.load("application"))
+    val apiSystem = ActorSystem("ApiCluster")
 
-      val system = ActorSystem("ApiCluster", config)
+    val router = apiSystem.actorOf(Props[EventStatsProcessingRouter], name = "eventStatsProcessingRouter")
 
-      system.actorOf(Props[EventsStatsActor], name = "statsWorker")
-      system.actorOf(Props[EventStatsProcessingRouter], name = "statsProcessor")
-    }
+    apiSystem.scheduler.schedule(2.seconds, 15.seconds, router, CalculateStatsCommand("some data - " + UUID.randomUUID()))
+
   }
 
 }
