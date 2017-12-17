@@ -2,26 +2,37 @@ package com.api.scaling.server
 
 import java.util.concurrent.TimeUnit
 
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
-import akka.actor.{Actor, ActorSystem, Props}
 import akka.util.Timeout
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-object EventStatsAPINode {
+class EventStatsAPINode(statsActor: ActorRef) {
 
-  def main(ports: Array[String]): Unit = {
+  def onEvent(event: String): Future[Any] = {
 
     implicit val timeout = Timeout(100, TimeUnit.MILLISECONDS)
 
-    implicit val system = ActorSystem("ApiCluster")
-    val statsActor = system.actorOf(Props[EventsStatsActor], name = "statsWorker")
+    val result = statsActor ? event
 
-    system.actorOf(Props[EventStatsProcessingRouter], name = "statsProcessor")
+    result
+  }
 
-    val result = statsActor ? "ping pong"
+}
 
-    result.map { r =>
+object EventStatsAPINode {
+
+  implicit val actorSystem = ActorSystem("ApiCluster")
+
+  val statsActor = actorSystem.actorOf(Props[EventsStatsActor], name = "statsWorker")
+
+  def onEvent(str: String): Future[Any] = new EventStatsAPINode(statsActor).onEvent(str)
+
+  def main(ports: Array[String]): Unit = {
+
+    onEvent("ping pong").map { r =>
       println("===========")
       println(r)
       println("===========")

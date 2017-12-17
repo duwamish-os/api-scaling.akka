@@ -1,17 +1,15 @@
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.pattern.ask
 import akka.testkit.{DefaultTimeout, TestKit, TestProbe}
+import akka.util.Timeout
 import com.api.scaling.server.{EventsStatsActor, WordEvent, WordLengthEvent}
 import org.scalatest._
-import akka.pattern.ask
-import akka.util.Timeout
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class ActorSpecs extends TestKit(ActorSystem("api-scaling-aktorsystem")) with DefaultTimeout with FunSpecLike with Matchers with BeforeAndAfterAll {
 

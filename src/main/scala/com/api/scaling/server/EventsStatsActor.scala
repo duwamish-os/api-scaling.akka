@@ -1,12 +1,10 @@
 package com.api.scaling.server
 
 import akka.actor.Actor
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 import akka.pattern.pipe
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait Event
 
@@ -24,12 +22,12 @@ class EventsStatsActor extends Actor {
       println("received")
       val length = cache.get(word.data) match {
 
-        case Some(x) => x
+        case Some(l) => l
 
         case None =>
-          val x = word.data.length
-          cache += (word.data -> x)
-          x
+          val length = word.data.length
+          cache += (word.data -> length)
+          length
       }
 
       context.system.eventStream.publish(WordLengthEvent(word.data, length))
@@ -39,10 +37,10 @@ class EventsStatsActor extends Actor {
       println("after sending " + sender())
 
     case "process" =>
-      future() pipeTo sender()
+      task() pipeTo sender()
   }
 
-  def future(): Future[Int] = {
+  def task(): Future[Int] = {
 
     Future {
       100
