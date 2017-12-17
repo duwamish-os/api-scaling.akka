@@ -42,7 +42,7 @@ class EventStatsClientActor(processorPath: String) extends Actor {
     keepEmittingGetStatEvents.cancel()
   }
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
 
     case "GetStats" if workerNodes.nonEmpty =>
       // just pick any one
