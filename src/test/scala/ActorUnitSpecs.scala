@@ -5,7 +5,7 @@ import org.mockito.Mockito
 
 class ActorUnitSpecs {
 
-  val actorSystem = ActorSystem.create("event-system")
+  val actorSystem: ActorSystem = ActorSystem.create("event-system")
 
   @Test
   def test() = {

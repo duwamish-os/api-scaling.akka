@@ -2,29 +2,30 @@ package com.api.scaling.server.actor_system
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSelection, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-object Application {
+object WarehouseApp {
 
-  implicit val eventSystem = ActorSystem("actor-system1")
+  implicit val eventSystem: ActorSystem = ActorSystem("warehouse-system")
 
-  ActorEventSystem1.apply()
-  new ActorEventSystem2()
+  PickupActor.apply()
+  new PackupActor()
 
-  val musicActor = eventSystem.actorSelection("user/" + "music-actor")
+  val pickupActor: ActorSelection = eventSystem.actorSelection("user/" + "pickup-actor")
 
-  implicit val timeout = Timeout(5, TimeUnit.SECONDS)
+  implicit val timeout: Timeout = Timeout(5, TimeUnit.SECONDS)
 
   def main(args: Array[String]): Unit = {
 
     println("========================================================")
-    musicActor ! "Lamb of God released a new album"
+    pickupActor ! "Lamb of God album"
 
-    musicActor.ask("Porcupine Tree joined the application").onComplete {
+    pickupActor.ask("Shirts").onComplete {
       case Success(event) => println("[Consumer]- " + event)
       case Failure(ex) => println(ex)
     }
