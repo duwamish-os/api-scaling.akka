@@ -1,20 +1,22 @@
-package com.api.scaling.server.actor_system
+package com.api.scaling.server.non_blocking
 
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
+import com.api.scaling.server.blocking.PickupEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 object WarehouseApp {
 
-  implicit val eventSystem: ActorSystem = ActorSystem("warehouse-system")
+  implicit val eventSystem: ActorSystem = ActorSystem("nb-warehouse-system")
 
-  PickupActor.apply()
-  new PackupActor()
+  //start actors
+  PackupActorApi.init(eventSystem)
+  PickupActorApi.init(eventSystem)
 
   val pickupActor: ActorSelection = eventSystem.actorSelection("user/" + "pickup-actor")
 
@@ -23,7 +25,7 @@ object WarehouseApp {
   def main(args: Array[String]): Unit = {
 
     println("========================================================")
-    pickupActor ! "Lamb of God album"
+    pickupActor ! PickupEvent("Lamb of God album")
 
     pickupActor.ask("Shirts").onComplete {
       case Success(event) => println("[Consumer]- " + event)

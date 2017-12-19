@@ -22,6 +22,8 @@ case class ShippedEvent(item: String)
 
 class ShipActor(packupActor: ActorRef) extends Actor {
 
+  println("ShipActor: " + Thread.currentThread().getName)
+
   implicit val timeout: Timeout = Timeout(9 seconds)
 
   override def receive: PartialFunction[Any, Unit] = {
@@ -40,6 +42,8 @@ class ShipActor(packupActor: ActorRef) extends Actor {
 
 class PackupActor(pickupActor: ActorRef) extends Actor {
 
+  println("PackupActor: " + Thread.currentThread().getName)
+
   implicit val timeout: Timeout = Timeout(7 seconds)
 
   override def receive: PartialFunction[Any, Unit] = {
@@ -56,6 +60,8 @@ class PackupActor(pickupActor: ActorRef) extends Actor {
 
 class PickupActor extends Actor {
 
+  println("PickupActor: " + Thread.currentThread().getName)
+
   override def receive: PartialFunction[Any, Unit] = {
     case e: PickupEvent =>
       println(s"[INFO] received $e from ${sender()}")
@@ -64,9 +70,10 @@ class PickupActor extends Actor {
   }
 }
 
-object Main extends App {
+object Warehouse extends App {
 
-  val actorSystem = ActorSystem("blocking-warehouse")
+  println(s"Warehouse app: ${Thread.currentThread().getName}")
+  val actorSystem = ActorSystem("blocking-warehouse-actor-system")
   val pickup = actorSystem.actorOf(Props(new PickupActor()), "pickup")
   val packup = actorSystem.actorOf(Props(new PackupActor(pickup)), "packup")
   val ship = actorSystem.actorOf(Props(new ShipActor(packup)), "ship")

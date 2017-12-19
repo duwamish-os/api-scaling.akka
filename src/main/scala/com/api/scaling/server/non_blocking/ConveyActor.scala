@@ -1,4 +1,4 @@
-package com.api.scaling.server.actor_system
+package com.api.scaling.server.non_blocking
 
 import akka.actor.Actor
 
