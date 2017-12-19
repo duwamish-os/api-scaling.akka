@@ -3,12 +3,8 @@ package com.api.scaling.server.non_blocking
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorSelection, ActorSystem}
-import akka.pattern.ask
 import akka.util.Timeout
 import com.api.scaling.server.blocking.PickupEvent
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
 
 object WarehouseApp {
 
@@ -24,14 +20,12 @@ object WarehouseApp {
 
   def main(args: Array[String]): Unit = {
 
-    println("========================================================")
-    pickupActor ! PickupEvent("Lamb of God album")
+    (1 to 5).foreach { i =>
+      println(s"emitting PickupEvent $i")
+      pickupActor ! PickupEvent(s"Lamb of God album - $i")
 
-    pickupActor.ask("Shirts").onComplete {
-      case Success(event) => println("[Consumer]- " + event)
-      case Failure(ex) => println(ex)
+      Thread.sleep(2000)
     }
-    println("=========================================================")
   }
 
 }
