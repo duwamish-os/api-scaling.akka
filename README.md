@@ -5,11 +5,14 @@ non-blocking
 
 ![](nb.png)
 
+![](nb_default_ispatchers_yk.png)
 
 threaddump
 --
 
 ```
+PackupActor nb-warehouse-system-akka.actor.default-dispatcher-3
+PickupActor nb-warehouse-system-akka.actor.default-dispatcher-2
 emitting PickupEvent 1
 ShipActor received ShipEvent(Lamb of God album - 1)
 emitting PickupEvent 2
@@ -20,6 +23,29 @@ emitting PickupEvent 4
 ShipActor received ShipEvent(Lamb of God album - 4)
 emitting PickupEvent 5
 ShipActor received ShipEvent(Lamb of God album - 5)
+emitting PickupEvent 6
+ShipActor received ShipEvent(Nexus - 6)
+emitting PickupEvent 7
+ShipActor received ShipEvent(Nexus - 7)
+emitting PickupEvent 8
+ShipActor received ShipEvent(Nexus - 8)
+emitting PickupEvent 9
+ShipActor received ShipEvent(Nexus - 9)
+emitting PickupEvent 10
+ShipActor received ShipEvent(Nexus - 10)
+ Group[main:class java.lang.ThreadGroup]
+   Thread[main:RUNNABLE]
+   Thread[Monitor Ctrl-Break:RUNNABLE]
+   Thread[nb-warehouse-system-scheduler-1:TIMED_WAITING]
+   Thread[nb-warehouse-system-akka.actor.default-dispatcher-2:WAITING]
+   Thread[nb-warehouse-system-akka.actor.default-dispatcher-3:WAITING]
+   Thread[nb-warehouse-system-akka.actor.default-dispatcher-4:TIMED_WAITING]
+ Group[main:class java.lang.ThreadGroup]
+   Thread[main:RUNNABLE]
+   Thread[Monitor Ctrl-Break:RUNNABLE]
+   Thread[nb-warehouse-system-scheduler-1:TIMED_WAITING]
+   Thread[nb-warehouse-system-akka.actor.default-dispatcher-2:WAITING]
+   Thread[nb-warehouse-system-akka.actor.default-dispatcher-3:TIMED_WAITING]
 
 ```
 

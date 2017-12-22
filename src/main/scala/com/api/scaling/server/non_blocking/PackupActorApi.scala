@@ -19,9 +19,13 @@ object PackupActorApi {
 }
 
 class PackupActor(actorSystem: ActorSystem) extends Actor {
+  println(s"Assigned PackupActor ${Thread.currentThread().getName}")
+
   val shipActor: ActorSelection = actorSystem.actorSelection("user/ship-actor")
 
   override def receive: PartialFunction[Any, Unit] = {
-    case e: PackupEvent => shipActor ! ShipEvent(e.item)
+    case e: PackupEvent =>
+      println(s"PackupActor ${Thread.currentThread().getName} received ${e}")
+      shipActor ! ShipEvent(e.item)
   }
 }
