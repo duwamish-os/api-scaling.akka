@@ -29,10 +29,10 @@ class ShipActor(packupActor: ActorRef) extends Actor {
   override def receive: PartialFunction[Any, Unit] = {
     case e: ShipEvent =>
       val replyTo = sender()
-      println(s"[INFO] received $e")
+      println(s"[INFO] ShipActor received $e")
       (packupActor ? PackupEvent(e.item)).map {
         case e: PackedupEvent =>
-          println(s"       [INFO] received $e")
+          println(s"       ShipActor received $e")
           replyTo ! ShippedEvent(e.item)
       }
 
@@ -49,10 +49,10 @@ class PackupActor(pickupActor: ActorRef) extends Actor {
   override def receive: PartialFunction[Any, Unit] = {
     case e: PackupEvent =>
       val replyTo = sender()
-      println(s"[INFO] received $e from $replyTo")
+      println(s"[INFO] PackupActor received $e from $replyTo")
       (pickupActor ? PickupEvent(e.item)).map {
         case e: PickedupEvent =>
-          println(s"       [INFO] received $e")
+          println(s"       PackupActor received $e")
           replyTo ! PackedupEvent(e.item)
       }
   }
@@ -64,7 +64,7 @@ class PickupActor extends Actor {
 
   override def receive: PartialFunction[Any, Unit] = {
     case e: PickupEvent =>
-      println(s"[INFO] received $e from ${sender()}")
+      println(s"[INFO] PickupActor received $e from ${sender()}")
       Thread.sleep(1000)
       sender() ! PickedupEvent(e.item)
   }
@@ -74,9 +74,11 @@ object Warehouse extends App {
 
   println(s"Warehouse app: ${Thread.currentThread().getName}")
   val actorSystem = ActorSystem("blocking-warehouse-actor-system")
+
   val pickup = actorSystem.actorOf(Props(new PickupActor()), "pickup")
   val packup = actorSystem.actorOf(Props(new PackupActor(pickup)), "packup")
   val ship = actorSystem.actorOf(Props(new ShipActor(packup)), "ship")
+
   implicit val timeout: Timeout = Timeout(10 seconds)
 
   println("[INFO] sending shipment request")

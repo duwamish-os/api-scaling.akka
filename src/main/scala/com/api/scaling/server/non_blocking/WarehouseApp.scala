@@ -12,13 +12,13 @@ object WarehouseApp {
 
   println(s"Main Thread ${Thread.currentThread().getName}")
 
-  implicit val eventSystem: ActorSystem = ActorSystem("nb-warehouse-system")
+  implicit val eventSystemKernel: ActorSystem = ActorSystem("nb-warehouse-system")
 
   //start actors
-  PackupActorApi.init(eventSystem)
-  PickupActorApi.init(eventSystem)
+  PackupActorApi.init(eventSystemKernel)
+  PickupActorApi.init(eventSystemKernel)
 
-  val pickupActor: ActorSelection = eventSystem.actorSelection("user/" + "pickup-actor")
+  val pickupActor: ActorSelection = eventSystemKernel.actorSelection("user/" + "pickup-actor")
 
   implicit val timeout: Timeout = Timeout(5, TimeUnit.SECONDS)
 
@@ -27,6 +27,7 @@ object WarehouseApp {
     warehouseWorker("prayagupd")
 
     println("shipping items done")
+
   }
 
   def releaseItems(): Unit = {
@@ -48,7 +49,7 @@ object WarehouseApp {
     // for ever unless terminated
     for (_ <- 'a' to 'c') {
       Thread.sleep(30000)
-      listThreads(Thread.currentThread().getThreadGroup, " ")
+      threadCounts(Thread.currentThread().getThreadGroup, " ")
     }
   }
 
@@ -66,14 +67,14 @@ object WarehouseApp {
       // for ever unless terminated
       for (_ <- 'a' to 'c') {
         Thread.sleep(30000)
-        listThreads(Thread.currentThread().getThreadGroup, " ")
+        threadCounts(Thread.currentThread().getThreadGroup, " ")
       }
       println("continue?(Enter/:q)")
     } while (StdIn.readLine() != ":q")
 
   }
 
-  def listThreads(group: ThreadGroup, indent: String): Unit = {
+  def threadCounts(group: ThreadGroup, indent: String): Unit = {
 
     println(indent + "Group[" + group.getName + ":" + group.getClass + "]")
     val threads = new Array[Thread](group.activeCount() * 2 + 10)
@@ -90,7 +91,7 @@ object WarehouseApp {
     val ng = group.enumerate(groups, false)
 
     for (i <- 0 until ng) {
-      listThreads(groups(i), indent + "  ")
+      threadCounts(groups(i), indent + "  ")
     }
   }
 
